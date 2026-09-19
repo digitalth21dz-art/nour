@@ -273,7 +273,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     
 
      .hero-names {
-     font-family: 'Great Vibes', cursive;
+   font-family: 'Caveat', cursive;
     font-size: clamp(42px, 12vw, 64px);
     font-weight: 400;
     line-height: 1.2;
@@ -1318,7 +1318,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     <div class="invitation-content" id="invitationContent">
 
         <section class="heroo" id="heroo">
-            <div class="hero-date" style="text-align: center; ">Bienvenue à nos fiançailles</div>
+            <div class="hero-date" style="text-align: center; ">Bienvenue à nos fiançailles et Fateha</div>
 
             <div class="hero-names">Abderrahmene</div>
             <div class="hero-ampersand">&</div>
@@ -1496,15 +1496,12 @@ Cliquez sur le bouton ci-dessous pour ouvrir l'itinéraire vers la salle des fê
                 }
             }
 
-            function unlockAudio() {
-                if (!audioUnlocked && bgMusic) {
-                    bgMusic.play().then(() => {
-                        bgMusic.pause();
-                        bgMusic.currentTime = 0;
-                        audioUnlocked = true;
-                    }).catch(() => {});
-                }
-            }
+          function unlockAudio() {
+    // Ne fait plus rien de bloquant : on laisse startVideo gérer la musique
+    if (!audioUnlocked && bgMusic) {
+        audioUnlocked = true;
+    }
+}
 
             function playMusic() {
                 if (!bgMusic) return;
@@ -1638,34 +1635,45 @@ Cliquez sur le bouton ci-dessous pour ouvrir l'itinéraire vers la salle des fê
             }
 
             // --- LANCEMENT DE LA VIDÉO ---
-            function startVideo() {
-                // Cacher la cover
-                coverPage.style.opacity = '0';
-                setTimeout(() => {
-                    coverPage.style.display = 'none';
-                }, 800);
+           function startVideo() {
+    // Cacher la cover
+    coverPage.style.opacity = '0';
+    setTimeout(() => {
+        coverPage.style.display = 'none';
+    }, 800);
 
-                // Afficher et lancer la vidéo
-                videoOverlay.style.display = 'flex';
-                coverVideo.currentTime = 0;
-                coverVideo.play().then(() => {
-                    console.log('Vidéo lancée');
-                }).catch(err => {
-                    console.warn('Lecture vidéo impossible, passage direct à l\'invitation', err);
-                    showInvitation();
-                });
+    // Lancer la musique EN MÊME TEMPS que la vidéo
+    if (bgMusic) {
+        bgMusic.currentTime = 0;
+        bgMusic.volume = 1;
+        bgMusic.play().then(() => {
+            musicPlaying = true;
+            audioUnlocked = true;
+            updateMusicUI();
+        }).catch((err) => {
+            console.warn('Musique bloquée', err);
+        });
+    }
 
-                // Quand la vidéo se termine
-                coverVideo.addEventListener('ended', showInvitation, { once: true });
+    // Afficher et lancer la vidéo
+    videoOverlay.style.display = 'flex';
+    coverVideo.currentTime = 0;
+    coverVideo.play().then(() => {
+        console.log('Vidéo lancée');
+    }).catch(err => {
+        console.warn('Lecture vidéo impossible, passage direct à l\'invitation', err);
+        showInvitation();
+    });
 
-                // Fallback si la vidéo ne se lance pas dans les 5 secondes
-                setTimeout(() => {
-                    if (!videoEnded && coverVideo.paused && coverVideo.currentTime === 0) {
-                        showInvitation();
-                    }
-                }, 5000);
-            }
+    // Quand la vidéo se termine
+    coverVideo.addEventListener('ended', showInvitation, { once: true });
 
+    setTimeout(() => {
+        if (!videoEnded && coverVideo.paused && coverVideo.currentTime === 0) {
+            showInvitation();
+        }
+    }, 5000);
+}
             // --- CLIC SUR LA COUVERTURE ---
             coverPage.addEventListener('click', () => {
                 unlockAudio(); // Débloquer l'audio pour plus tard
